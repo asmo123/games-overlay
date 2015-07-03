@@ -5,15 +5,18 @@
 
 EAPI=5
 
-inherit eutils gnome2-utils multilib cmake-utils
+inherit eutils gnome2-utils multilib cmake-utils flag-o-matic versionator # check what is really needed
+[[ $(get_version_component_range $(get_version_component_count)) == *999? ]] && inherit git-r3
 
-DESCRIPTION="An open source reimplementation of TES III: Morrowind game engine. This version uses the OpenSceneGraph toolkit, which will be the only one used in the future."
-
+DESCRIPTION="Open source reimplementation of TES III: Morrowind game engine. You can choose between Ogre and the new OpenSceneGraph latest version."
 HOMEPAGE="https://openmw.org/"
 LICENSE="GPL-3 MIT BitstreamVera OFL-1.1"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
-IUSE="doc devtools"
+#IUSE="devtools minimal profile +tr1"
+# tr1 has something to do with the "test" USE flag
+# offered USE flags
+IUSE="doc +launcher ogre editor +osg test"
 
 # get the right sources
 #if [[ ${PV} == *999? ]]; then
@@ -26,24 +29,34 @@ IUSE="doc devtools"
 #        S=${WORKDIR}/${PN}-${P}
 #fi
 
-# XXX static build
-RDEPEND="
-	app-arch/unshield
-	>=dev-games/mygui-3.2.1 # [ogre] is most probably not needed anymore
-	>=dev-games/openscenegraph-3.2.1[qt4,ffmpeg,jpeg,png,truetype,zlib] # check what's really needed (qt is)
-	>=dev-libs/boost-1.46.0[nls,threads]
-	dev-libs/tinyxml[stl]
-	>=dev-qt/qtcore-4.7.0:4
-	>=dev-qt/qtgui-4.7.0:4
-	media-libs/freetype:2
-	media-libs/libsdl2[X,video]
+# >>>>>>>>>> ogre USE flag still needed by myui?
+# only needed by the game engine
+OPENMW_LIBS="dev-games/mygui-3.2.1
 	media-libs/openal[qt4]
+	virtual/ffmpeg"				# shared lib has name *libav*
+#	dev-libs/tinyxml[st1]			# not needed when OSG is used ?! RE-CHECK
+#
+# launcher is usually needed (for selecting plugins etc)
+LAUNCHER_LIBS=">=dev-qt/qtgui-4.7 app-arch/unshield" # qtgui shared lib used, unshield used by openmw-wizard
+# OpenMW Construction Set (for creating/editing mods)
+OPENCS_LIBS=">=dev-qt/qtgui-4.7" # dev-qt/qtxmlpatterns[pch] not linked by any executable
+# needed by all # check if nls makes sense (can't hurt anyways)
+LIBDEPEND="${OPENMW_LIBS}
+	>=dev-libs/boost-1.46.0[nls,threads]
+	>=dev-qt/qtcore-4.7
+	media-libs/freetype:2
+	media-libs/libsdl2[X,video,-directfb(-)]
 	>=sci-physics/bullet-2.80
-	virtual/ffmpeg
-	devtools? ( dev-qt/qtxmlpatterns:4[pch] )"
-DEPEND="${RDEPEND}
-	virtual/pkgconfig
-	doc? ( app-doc/doxygen media-gfx/graphviz )"
+	doc? ( app-doc/doxygen media-gfx/graphviz )	# check how to build this with OSG
+	editor? ( ${OPENCS_LIBS} )
+	launcher? ( ${LAUNCHER_LIBS} )
+	ogre? >=dev-games/ogre-1.9.0-r1[boost,freeimage,opengl,threads,zip]
+	osg? >=dev-games/openscenegraph-3.2.1[qt4,ffmpeg,jpeg,png,truetype,zlib]"
+DEPEND="${LIBDEPEND}
+	test? ( dev-cpp/gmock[tr1=] dev-cpp/gtest[tr1=] )
+	virtual/pkgconfig"
+[[ ${EAPI} == *-hdepend ]] || DEPEND+=" ${HDEPEND}"
+RDEPEND="${LIBDEPEND}"
 
 S=${WORKDIR}/${PN}-${P}
 
