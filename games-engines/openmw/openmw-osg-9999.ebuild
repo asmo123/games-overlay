@@ -1,6 +1,7 @@
 # Copyright 2014 Julian Ospald <hasufell@posteo.de>
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
+# NOTE: This file is based on an ebuild of Julian Ospald. In so far the header may be wrong. I will correct this ASAP I got a reply redarding this topic.
 
 EAPI=5
 
