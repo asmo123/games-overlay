@@ -6,30 +6,40 @@ EAPI=5
 
 inherit eutils gnome2-utils multilib cmake-utils
 
-DESCRIPTION="An open source reimplementation of TES III: Morrowind"
-HOMEPAGE="http://openmw.org/"
-SRC_URI="https://github.com/OpenMW/openmw/archive/${P}.tar.gz"
+DESCRIPTION="An open source reimplementation of TES III: Morrowind game engine. This version uses the OpenSceneGraph toolkit, which will be the only one used in the future."
 
+HOMEPAGE="https://openmw.org/"
 LICENSE="GPL-3 MIT BitstreamVera OFL-1.1"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
 IUSE="doc devtools"
 
+# get the right sources
+#if [[ ${PV} == *999? ]]; then
+        EGIT_REPO_URI="https://github.com/scrawl/openmw.git"
+        if [[ $(get_version_component_count) -ge 4 ]]; then
+                EGIT_BRANCH=openmw$(get_version_component_range 2)
+        fi
+#else
+#        SRC_URI="http://github.com/OpenMW/${PN}/archive/${P}.tar.gz"
+#        S=${WORKDIR}/${PN}-${P}
+#fi
+
 # XXX static build
 RDEPEND="
 	app-arch/unshield
-	>=dev-games/mygui-3.2.1[ogre]
-	>=dev-games/ogre-1.9.0[freeimage,ois,opengl,zip]
-	>=dev-libs/boost-1.46.0
-	dev-libs/tinyxml
+	>=dev-games/mygui-3.2.1 # [ogre] is most probably not needed anymore
+	>=dev-games/openscenegraph-3.2.1[qt4,ffmpeg,jpeg,png,truetype,zlib] # check what's really needed (qt is)
+	>=dev-libs/boost-1.46.0[nls,threads]
+	dev-libs/tinyxml[stl]
 	>=dev-qt/qtcore-4.7.0:4
 	>=dev-qt/qtgui-4.7.0:4
 	media-libs/freetype:2
 	media-libs/libsdl2[X,video]
-	media-libs/openal
+	media-libs/openal[qt4]
 	>=sci-physics/bullet-2.80
 	virtual/ffmpeg
-	devtools? ( dev-qt/qtxmlpatterns:4 )"
+	devtools? ( dev-qt/qtxmlpatterns:4[pch] )"
 DEPEND="${RDEPEND}
 	virtual/pkgconfig
 	doc? ( app-doc/doxygen media-gfx/graphviz )"
