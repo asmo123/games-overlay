@@ -1,24 +1,24 @@
 # Copyright 2014 Julian Ospald <hasufell@posteo.de>
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
-# NOTE: This file is based on an ebuild of Julian Ospald. In so far the header may be wrong. I will correct this ASAP I got a reply redarding this topic.
-
+# NOTE: This file is based on an ebuild of Julian Ospald.
 EAPI=5
 
-inherit eutils gnome2-utils multilib cmake-utils flag-o-matic versionator # check what is really needed
+# not used:  multilib (needed if ~x86_32 activated(?)) flag-o-matic 
+inherit cmake-utils eutils gnome2-utils versionator
 [[ $(get_version_component_range $(get_version_component_count)) == *999? ]] && inherit git-r3
 
-DESCRIPTION="Open source reimplementation of TES III: Morrowind game engine. You can choose between Ogre and the new OpenSceneGraph latest version."
+DESCRIPTION="Open source reimplementation of TES III: Morrowind game engine. This version uses OpenSceneGraph as rendering engine. Use of the Ogre-engine will be discontinued soon.
 HOMEPAGE="https://openmw.org/"
 LICENSE="GPL-3 MIT BitstreamVera OFL-1.1"
 SLOT="0"
-KEYWORDS="~amd64 ~x86"
+KEYWORDS="~amd64"
 #IUSE="devtools minimal profile +tr1"
 # tr1 has something to do with the "test" USE flag
 # offered USE flags
-IUSE="doc +launcher ogre editor +osg test"
+IUSE="doc +launcher -editor -test"
 
-# get the right sources
+# get the right sources # for the time being only v9999 is supported
 #if [[ ${PV} == *999? ]]; then
         EGIT_REPO_URI="https://github.com/scrawl/openmw.git"
         if [[ $(get_version_component_count) -ge 4 ]]; then
@@ -29,7 +29,7 @@ IUSE="doc +launcher ogre editor +osg test"
 #        S=${WORKDIR}/${PN}-${P}
 #fi
 
-# >>>>>>>>>> ogre USE flag still needed by myui?
+# >>>>>>>>>> ogre USE flag still needed by myui? -> TEST
 # only needed by the game engine
 OPENMW_LIBS="dev-games/mygui-3.2.1
 	media-libs/openal[qt4]
@@ -99,6 +99,7 @@ src_install() {
 	fi
 }
 
+# this MAYBE has to be adapted to QT/KDE
 pkg_preinst() {
 	gnome2_icon_savelist
 }
